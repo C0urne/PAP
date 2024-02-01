@@ -4,6 +4,7 @@ library(tidyverse)
 library(readxl)
 library(ggplot2)
 library(hrbrthemes)
+library(ggrepel)
 library(openxlsx)
 
 # 124 2024
@@ -67,6 +68,7 @@ tab <- data.frame(
 )
 
 names(tab) <- c("Principaux_facteurs_d'évolution", "d_124_21", "d_124_22", "d_124_23","d_124_24","d_155_21","d_155_22","d_155_23","d_155_24")
+write.xlsx(tab, "data/processed/tab.xlsx")
 
 ttab <- t(tab[, -1])
 ttab <- as.data.frame(ttab)
@@ -74,28 +76,37 @@ colnames(ttab) <- tab$`Principaux_facteurs_d'évolution`
 
 names(ttab)[names(ttab) == "GVT positif"] <- "GVT_positif"
 
-ttab %>%
-  ggplot(aes(x = "GVT positif", group =e)) +
-    geom_bar()
-
+gvt <- data_frame(
+  "année" = c(2021, 2022, 2023, 2024, 2021, 2022, 2023, 2024),
+  "programme" = c("p124", "p124","p124","p124", "p155", "p155", "p155", "p155"),
+  "gvt_solde" = c(2.66, 0.23, 0.05, 2.59, 3.34, 2.65, 0.28, 2.91)
+)
+ggplot(gvt, aes(y = gvt_solde, x = année, color = as.factor(programme))) +
+  geom_line(linewidth = 1) +
+  geom_point(shape=21, color="black", fill="grey", size=3) +
+  geom_text(aes(label = gvt_solde), check_overlap = TRUE, nudge_x = 0.25, color = "black") +
+  ggtitle("GVT p124 et p155 de 2021 à 2024") +
+  scale_color_manual(values = c("#d57254", "#54bcd5")) +
+  labs(color = "")
+## ## ## ## ## ## ##
 
 ggplot(ttab, aes(y = `GVT solde`, x = rownames(ttab), fill = substr(rownames(ttab), 3, 5))) +
   geom_bar(stat = "identity") +
-  labs(x = "programme_année", y = "GVT solde", title = "", fill ="") +
+  labs(x = "d_programme_année", y = "GVT solde", title = "", fill ="") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 20, hjust = 1)) +
   scale_fill_manual(values = c("#d57254", "#54bcd5"))
 
 ggplot(ttab, aes(y = Total, x = rownames(ttab), fill = substr(rownames(ttab), 3, 5))) +
   geom_bar(stat = "identity") +
-  labs(x = "programme_année", y = "Total", title = "", fill ="") +
+  labs(x = "d_programme_année", y = "Total", title = "", fill ="") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 20, hjust = 1)) +
   scale_fill_manual(values = c("#d57254", "#54bcd5"))
 
 ggplot(ttab, aes(y = `Impact du schéma d'emplois`, x = rownames(ttab), fill = substr(rownames(ttab), 3, 5))) +
   geom_bar(stat = "identity") +
-  labs(x = "programme_année", y = "Impact du schéma d'emplois", title = "", fill ="") +
+  labs(x = "d_programme_année", y = "Impact du schéma d'emplois", title = "", fill ="") +
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 20, hjust = 1)) +
   scale_fill_manual(values = c("#d57254", "#54bcd5"))
@@ -118,12 +129,7 @@ effectifs <- data.frame(
   "année" = c(2021, 2022, 2023, 2024, 2025, 2026),
   "p124_p155" = c(12366, 12453, 12210, 12382, 12382, 12382)
 )
-
-ggplot(effectifs, aes(y = p124_p155, x = année)) +
-  geom_line() +
-  geom_point() +
-  ggtitle("Effectifs p124 et p155 de 2021 à 2026")
-
+write.xlsx(effectifs, "data/processed/effectifs.xlsx")
 
 ggplot(effectifs, aes(y = p124_p155, x = année)) +
   geom_line() +
@@ -131,26 +137,21 @@ ggplot(effectifs, aes(y = p124_p155, x = année)) +
   geom_text(aes(label = p124_p155), check_overlap = TRUE, nudge_y = 10) +
   ggtitle("Effectifs p124 et p155 de 2021 à 2026")
 
+
 ## Masse salariale
-
-ms <- data.frame(
-  "année" = c(2021, 2022, 2023, 2024),
-  "programme" = c("p124", "p155"),
-  "Total masse salariale" = c(343.42, 438.12, 12210, 12382, 12382, 12382)
-)
-
-ms <- data_frame(
-  "année" = c(2021, 2022, 2023, 2024, 2021, 2022, 2023, 2024),
-  "programme" = c("p124", "p124","p124","p124", "p155", "p155", "p155", "p155"),
-  "Total_masse_salariale" = c(285.75, 290.36, 416.91, 343.42, 394.40, 409.07, 315.24, 438.12),
-  "Combinés" = c(680.15, 680.15, 699.43, 699.43, 732.15, 732.15, 781.54, 781.54)
-)
+# ms <- data_frame(
+#   "année" = c(2021, 2022, 2023, 2024, 2021, 2022, 2023, 2024),
+#   "programme" = c("p124", "p124","p124","p124", "p155", "p155", "p155", "p155"),
+#   "Total_masse_salariale" = c(285.75, 290.36, 416.91, 343.42, 394.40, 409.07, 315.24, 438.12),
+#   "Combinés" = c(680.15, 680.15, 699.43, 699.43, 732.15, 732.15, 781.54, 781.54)
+# )
 
 ms <- data_frame(
   "année" = c(2021, 2022, 2023, 2024, 2021, 2022, 2023, 2024, 2021, 2022, 2023, 2024),
   "programme" = c("p124", "p124","p124","p124", "p155", "p155", "p155", "p155", "Combinés", "Combinés", "Combinés", "Combinés"),
   "Total_masse_salariale" = c(285.75, 290.36, 416.91, 343.42, 394.40, 409.07, 315.24, 438.12,   680.15, 699.43, 732.15, 781.54),
 )
+write.xlsx(ms, "data/processed/ms.xlsx")
 
 ggplot(ms, aes(y = Total_masse_salariale, x = année, color = as.factor(programme))) +
   geom_line(linewidth = 1) +
@@ -160,14 +161,7 @@ ggplot(ms, aes(y = Total_masse_salariale, x = année, color = as.factor(programm
   scale_color_manual(values = c("#2eaf4c", "#d57254", "#54bcd5")) +
   labs(color = "")
 
-
-
-
-
-
-
-
-
+## Masse salariale + Effectifs 
 
 effectifs <- data.frame(
   "année" = c(2021, 2022, 2023, 2024, 2025, 2026),
@@ -181,23 +175,16 @@ poos <- data_frame(
 )
 
 e_ms <- merge(effectifs, poos, by = "année", all = TRUE)
-
+write.xlsx(e_ms, "data/processed/e_ms.xlsx")
 
 ggplot(e_ms, aes(x = Total_masse_salariale, y = p124_p155)) +
   geom_line(linewidth = 0.7) +
-  geom_point(shape=21, fill = "grey", color="black", size=3) +
-  geom_text(aes(label = Total_masse_salariale), check_overlap = TRUE, nudge_y = 20, color = "black") +
+  geom_point(shape = 21, fill = "grey", color = "black", size = 3) +
+  geom_text(aes(label = année), check_overlap = TRUE, nudge_y = 20, color = "black") +
+  geom_label_repel(aes(label = paste0(p124_p155, "; ", Total_masse_salariale)), 
+                   nudge_y = -17, color = "black", size = 3, min.segment.length = 10) +
   ggtitle("Effectifs et masse salariale") +
-  scale_color_manual(values = c("#2eaf4c", "#d57254", "#54bcd5")) +
   labs(color = "")
-
-
-
-
-
-
-
-
 
 
 
