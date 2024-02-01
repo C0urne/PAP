@@ -3,6 +3,7 @@
 library(tidyverse)
 library(readxl)
 library(ggplot2)
+library(hrbrthemes)
 library(openxlsx)
 
 # 124 2024
@@ -49,39 +50,6 @@ d_155_21 <- data.frame(
 )
 
 ds_l <- list(d_124_24, d_155_24, d_124_23, d_155_23, d_124_22, d_155_22, d_124_21, d_155_21)
-
-aled <- left_join(ds_l)
-
-merged_dataset <- dataset_list %>%
-  reduce(function(x, y) left_join(x, y, by = "Principaux.facteurs.d.évolution"))
-
-andy <- data.frame(
-  "var" = c("age", "height"),
-  "valeur" = c(12, 55)
-)
-
-bernard <- data.frame(
-  "var" = c("age", "height"),
-  "valeur" = c(20, 78)
-)
-
-
-what_i_want <- data.frame(
-  "var" = c("age", "height"),
-  "andy" = c(12, 55),
-  "bernard" = c(20, 78)
-)
-
-what_i_want_aie <- merge(d_124_21, d_124_22, d_124_23, d_124_24, by = "Principaux.facteurs.d.évolution", all = TRUE)
-
-
-wb <- createWorkbook()
-for (i in seq_along(ds_l)) {
-  addWorksheet(wb, sheetName = names(ds_l)[i])
-  writeData(wb, sheet = names(ds_l)[i], data = ds_l[[i]])
-}
-saveWorkbook(wb, "my_data.xlsx", overwrite = TRUE)
-
 
 
 d_124_21[2]
@@ -142,6 +110,55 @@ ggplot(ttab, aes(y = `Socle Exécution 2020 retraitée`, x = rownames(ttab), fil
 
 ## effectifs gérés
 
+# effectifs <- data.frame(
+#   "année" = c(2020, 2021, 2022, 2023, 2024, 2025, 2026),
+#   "p124_p155" = c(17283, 12366, 12453, 12210, 12382, 12382, 12382)
+# )
+effectifs <- data.frame(
+  "année" = c(2021, 2022, 2023, 2024, 2025, 2026),
+  "p124_p155" = c(12366, 12453, 12210, 12382, 12382, 12382)
+)
+
+ggplot(effectifs, aes(y = p124_p155, x = année)) +
+  geom_line() +
+  geom_point() +
+  ggtitle("Effectifs p124 et p155 de 2021 à 2026")
+
+
+ggplot(effectifs, aes(y = p124_p155, x = année)) +
+  geom_line() +
+  geom_point(shape=21, color="black", fill="#69b3a2", size=3) +
+  geom_text(aes(label = p124_p155), check_overlap = TRUE, nudge_y = 10) +
+  ggtitle("Effectifs p124 et p155 de 2021 à 2026")
+
+## Masse salariale
+
+ms <- data.frame(
+  "année" = c(2021, 2022, 2023, 2024),
+  "programme" = c("p124", "p155"),
+  "Total masse salariale" = c(343.42, 438.12, 12210, 12382, 12382, 12382)
+)
+
+ms <- data_frame(
+  "année" = c(2021, 2022, 2023, 2024, 2021, 2022, 2023, 2024),
+  "programme" = c("p124", "p124","p124","p124", "p155", "p155", "p155", "p155"),
+  "Total_masse_salariale" = c(285.75, 290.36, 416.91, 343.42, 394.40, 409.07, 315.24, 438.12),
+  "Combinés" = c(680.15, 680.15, 699.43, 699.43, 732.15, 732.15, 781.54, 781.54)
+)
+
+ms <- data_frame(
+  "année" = c(2021, 2022, 2023, 2024, 2021, 2022, 2023, 2024, 2021, 2022, 2023, 2024),
+  "programme" = c("p124", "p124","p124","p124", "p155", "p155", "p155", "p155", "Combinés", "Combinés", "Combinés", "Combinés"),
+  "Total_masse_salariale" = c(285.75, 290.36, 416.91, 343.42, 394.40, 409.07, 315.24, 438.12,   680.15, 699.43, 732.15, 781.54),
+)
+
+ggplot(ms, aes(y = Total_masse_salariale, x = année, color = as.factor(programme))) +
+  geom_line(linewidth = 1) +
+  geom_point(shape=21, fill = "grey", color="black", size=3) +
+  geom_text(aes(label = Total_masse_salariale), check_overlap = TRUE, nudge_y = 20, color = "black") +
+  ggtitle("Evolution de la masse salariale de 2021 à 2024") +
+  scale_color_manual(values = c("#2eaf4c", "#d57254", "#54bcd5")) +
+  labs(color = "")
 
 
 
@@ -151,7 +168,28 @@ ggplot(ttab, aes(y = `Socle Exécution 2020 retraitée`, x = rownames(ttab), fil
 
 
 
-##
+
+effectifs <- data.frame(
+  "année" = c(2021, 2022, 2023, 2024, 2025, 2026),
+  "p124_p155" = c(12366, 12453, 12210, 12382, 12382, 12382)
+)
+
+poos <- data_frame(
+  "année" = c(2021, 2022, 2023, 2024),
+  "programme" = c("Combinés", "Combinés", "Combinés", "Combinés"),
+  "Total_masse_salariale" = c(680.15, 699.43, 732.15, 781.54),
+)
+
+e_ms <- merge(effectifs, poos, by = "année", all = TRUE)
+
+
+ggplot(e_ms, aes(x = Total_masse_salariale, y = p124_p155)) +
+  geom_line(linewidth = 0.7) +
+  geom_point(shape=21, fill = "grey", color="black", size=3) +
+  geom_text(aes(label = Total_masse_salariale), check_overlap = TRUE, nudge_y = 20, color = "black") +
+  ggtitle("Effectifs et masse salariale") +
+  scale_color_manual(values = c("#2eaf4c", "#d57254", "#54bcd5")) +
+  labs(color = "")
 
 
 
@@ -162,6 +200,75 @@ ggplot(ttab, aes(y = `Socle Exécution 2020 retraitée`, x = rownames(ttab), fil
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
 
 
 
