@@ -2,6 +2,7 @@ library(tidyverse)
 library(readxl)
 library(ggplot2)
 library(hrbrthemes)
+library(gridExtra)
 library(ggrepel)
 library(openxlsx)
 
@@ -85,37 +86,51 @@ ggplot(gvt, aes(y = gvt_solde, x = année, color = as.factor(programme))) +
   geom_line(linewidth = 1) +
   geom_point(shape = 21, color = "black", fill = "grey", size = 3) +
   geom_text(aes(label = gvt_solde), check_overlap = TRUE, nudge_x = 0.25, color = "black") +
-  ggtitle("GVT p124 et p155 de 2021 à 2024") +
+  ggtitle("GVT, p124 et p155 de 2021 à 2024") +
   scale_color_manual(values = c("#d57254", "#54bcd5")) +
-  labs(color = "")
-
+  labs(color = "", y ="GVT solde (millions d'€)",
+       caption = "Source : Projet annuel de performances, années 2021 à 2024, programmes 124 et 155")
 ## ##
 
 tregvt <- ttab %>% 
   select(c(17,18,19,28,29)) %>%
   melt(id.vars  =c("programme", "année"), value.name = "value")
 
-tregvt %>%
-  filter(programme == "p124") %>%
-  ggplot(aes(y = value, x = année, color = as.factor(variable))) +
-  geom_line(linewidth = 1) +
-  geom_point(shape = 21, color = "black", fill = "grey", size = 3) +
-  geom_text(aes(label = value), check_overlap = TRUE, nudge_x = 0.25, color = "black") +
-  ggtitle("GVT p124 et p155 de 2021 à 2024") +
-  labs(color = "")
+# tregvt %>%
+#   filter(programme == "p124") %>%
+#   ggplot(aes(y = value, x = année, color = as.factor(variable))) +
+#   geom_line(linewidth = 1) +
+#   geom_point(shape = 21, color = "black", fill = "grey", size = 3) +
+#   geom_text(aes(label = value), check_overlap = TRUE, nudge_x = 0.25, color = "black") +
+#   ggtitle("GVT, p124 de 2021 à 2024") +
+#   labs(color = "", y = "GVT (millions d'€)",
+#        caption = "Source : Projet annuel de performances, années 2021 à 2024, programmes 124 et 155")
 
 tregvt %>%
   filter(programme == "p124") %>%
   ggplot(aes(y = abs(value), x = année, color = as.factor(variable))) +
   geom_line(linewidth = 1) +
   geom_point(shape = 21, color = "black", fill = "grey", size = 3) +
-  geom_text(aes(label = value), check_overlap = TRUE, nudge_x = 0.25, color = "black") +
+  geom_text(aes(label = value), check_overlap = T, nudge_x = 0.25, color = "black") +
   geom_hline(yintercept = 0) +
   facet_wrap(~ variable %in% c("GVT négatif", "GVT_positif"), ncol = 1) +
   ggtitle("P124, GVT, détail gvt positif et négatif, 2021 à 2024") +
-  labs(color = "", y = "GVT en valeur absolue") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 20, hjust = 1))
+  labs(color = "", y = "GVT en valeur absolue (millions d'€)",
+       caption = "Source : Projet annuel de performances, années 2021 à 2024, programmes 124 et 155") +
+  theme_minimal()
+
+tregvt %>%
+  filter(programme == "p155") %>%
+  ggplot(aes(y = abs(value), x = année, color = as.factor(variable))) +
+  geom_line(linewidth = 1) +
+  geom_point(shape = 21, color = "black", fill = "grey", size = 3) +
+  geom_text(aes(label = value), check_overlap = T, nudge_x = 0.25, color = "black") +
+  geom_hline(yintercept = 0) +
+  facet_wrap(~ variable %in% c("GVT négatif", "GVT_positif"), ncol = 1) +
+  ggtitle("P155, GVT, détail gvt positif et négatif, 2021 à 2024") +
+  labs(color = "", y = "GVT en valeur absolue (millions d'€)",
+       caption = "Source : Projet annuel de performances, années 2021 à 2024, programmes 124 et 155") +
+  theme_minimal()
 
 #by program + et - 
 tregvt %>%
@@ -124,25 +139,11 @@ tregvt %>%
   geom_line(linewidth = 1) +
   geom_point(shape = 21, color = "black", fill = "grey", size = 3) +
   geom_text(aes(label = value), check_overlap = TRUE, nudge_x = 0.25, color = "black") +
-  geom_hline(yintercept = 0) +
-  facet_wrap(~ variable %in% c("GVT négatif", "GVT_positif"), ncol = 1) +
+  facet_wrap(~ variable %in% c("GVT négatif", "GVT_positif (millions d'€)"), ncol = 1) +
   ggtitle("GVT, détail gvt positif et négatif, 2021 à 2024") +
-  labs(color = "", y = "GVT en valeur absolue") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 20, hjust = 1)) +
-  scale_color_manual(values = c("#d57254", "#54bcd5")) 
-
-tregvt %>%
-  filter(variable != "GVT solde") %>%
-  ggplot(aes(y = value, x = année, group = interaction(programme, variable), color = as.factor(programme))) +
-  geom_line(linewidth = 1) +
-  geom_point(shape = 21, color = "black", fill = "grey", size = 3) +
-  geom_text(aes(label = value), check_overlap = TRUE, nudge_x = 0.25, color = "black") +
-  facet_wrap(~ variable %in% c("GVT négatif", "GVT_positif"), ncol = 1) +
-  ggtitle("GVT, détail gvt positif et négatif, 2021 à 2024") +
-  labs(color = "", y = "GVT en valeur absolue") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 20, hjust = 1)) +
+  labs(color = "", y = "GVT en valeur absolue",
+       caption = "Source : Projet annuel de performances, années 2021 à 2024, programmes 124 et 155") +
+  #theme_minimal() +
   facet_wrap(~ variable, dir="v", scales = "free_y")  +
   scale_color_manual(values = c("#d57254", "#54bcd5"))
 
@@ -172,20 +173,22 @@ ggplot(ttab, aes(y = `Impact du schéma d'emplois`,
             size = 3) +
   labs(y = "Impact du schéma d'emplois (millions d'€)", 
        title = "",
-       fill = "") +
+       fill = "",
+       caption = "Source : Projet annuel de performances, années 2021 à 2024, programmes 124 et 155") +
   ggtitle("Impact du schéma d'emploi par programme, 2021 à 2024") +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 20, hjust = 1)) +
   scale_fill_manual(values = c("#d57254", "#54bcd5"))
 
-ggplot(ttab, aes(y = `Socle Exécution 2020 retraitée`, x = rownames(ttab), 
-                 fill = substr(rownames(ttab), 3, 5))) +
-  geom_bar(stat = "identity") +
-  labs(x = "programme_année", y = "Socle Exécution 2020 retraitée", title = "", 
-       fill = "") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 20, hjust = 1)) +
-  scale_fill_manual(values = c("#d57254", "#54bcd5"))
+
+# ggplot(ttab, aes(y = `Socle Exécution 2020 retraitée`, x = rownames(ttab), 
+#                  fill = substr(rownames(ttab), 3, 5))) +
+#   geom_bar(stat = "identity") +
+#   labs(x = "programme_année", y = "Socle Exécution 2020 retraitée", title = "", 
+#        fill = "",
+#        caption = "Source : Projet annuel de performances, années 2021 à 2024, programmes 124 et 155") +
+#   theme_minimal() +
+#   theme(axis.text.x = element_text(angle = 20, hjust = 1)) +
+#   scale_fill_manual(values = c("#d57254", "#54bcd5"))
 
 ## effectifs gérés
 
@@ -250,6 +253,7 @@ effectifs_prog <- data_frame(
   "p_155_23" = c(1092, 1647.10, 0, 1, 4967.90, 65, 7773),
   "p_155_24" = c(1106.70, 1564.01, 1, NA,4803.41, 324.20, 7799.32)
 )
+write.xlsx(effectifs_prog, "data/processed/effectifs_prog.xlsx")
 
 t <- t(effectifs_prog[, -1])
 t <- as.data.frame(t)
@@ -259,8 +263,8 @@ t$année <- c(2021, 2022, 2023, 2024, 2021, 2022, 2023, 2024)
 t$programme <- c("p124", "p124", "p124", "p124", "p155", "p155", "p155", "p155")
 
 ggplot(t, aes(y = Total, x = année, group = programme, color = programme)) +
-  geom_line() +
-  geom_point(shape = 21, color = "black", fill = "#69b3a2", size = 3) +
+  geom_line(linewidth = 1) +
+  geom_point(shape = 21, color = "black", fill = "grey", size = 3) +
   geom_text(aes(label = round(Total)), check_overlap = TRUE, nudge_y = -100, color = "black") +
   ggtitle("Effectifs (ETPT) p124 et p155 de 2021 à 2024") +
   labs(y = "Effectifs   (ETPT)",
@@ -269,6 +273,7 @@ ggplot(t, aes(y = Total, x = année, group = programme, color = programme)) +
 
   
 ee_ms <- merge(t, ms, by = c("année", "programme"), all = TRUE)
+write.xlsx(ee_ms, "data/processed/ee_ms.xlsx")
 # ee_ms %>%
 #   filter(programme != "Combinés") %>%
 #   ggplot(aes(x = Total, y = Total_masse_salariale, group = programme, color = programme)) +
@@ -281,7 +286,7 @@ ee_ms <- merge(t, ms, by = c("année", "programme"), all = TRUE)
 #   ggtitle("Effectifs et masse salariale") +
 #   labs(color = "")
 
-ee_ms %>%
+e1 <- ee_ms %>%
   filter(programme == "p124") %>%
   ggplot(aes(y = Total, x = Total_masse_salariale)) +
   geom_line(linewidth = 0.7, color="#d57254") +
@@ -292,10 +297,9 @@ ee_ms %>%
   ) +
   ggtitle("Effectifs et masse salariale programme 124") +
   labs(y = "Effectifs   (ETPT)",
-       x = "Total masse salariale (millions €)",
-       caption = "Source : Projet annuel de performances, années 2021 à 2024, programmes 124 et 155")
+       x = "Total masse salariale (millions €)")
 
-ee_ms %>%
+e2 <- ee_ms %>%
   filter(programme == "p155") %>%
   ggplot(aes(y = Total, x = Total_masse_salariale , color = programme)) +
   geom_line(linewidth = 0.7, color="#54bcd5") +
@@ -308,7 +312,7 @@ ee_ms %>%
   labs(y = "Effectifs   (ETPT)",
        x = "Total masse salariale (millions €)",
        caption = "Source : Projet annuel de performances, années 2021 à 2024, programmes 124 et 155")
-
+grid.arrange(e1, e2, nrow = 2, top = "! Les axes ne sont pas à la même échelle !")
 # graphiques secondaires
 
 tre <- ttab %>% 
@@ -322,12 +326,11 @@ ggplot(tre, aes(y = value,
   geom_line(linewidth = 1) +
   geom_point(shape = 21, fill = "grey", color = "black", size = 3) +
   labs(x = "année", y ="en millions d'euros", 
-       title = "", fill = "",
+       title = "", fill = "", color = "Programme",
        caption = "Source : Projet annuel de performances, années 2021 à 2024, programmes 124 et 155") +
   geom_hline(yintercept = 0) +
   ggtitle("Principaux facteurs d'évolution de la masse salariale, par programme, 2021 à 2024") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 20, hjust = 1)) +
+  #theme_minimal() +
   scale_fill_manual(values = c("#d57254", "#54bcd5")) +
   facet_wrap(~variable, ncol = 2, scales = "free_y", 
              labeller = as_labeller(c(`Socle Exécution 2020 retraitée` = "Socle Exécution 2020 retraitée",
